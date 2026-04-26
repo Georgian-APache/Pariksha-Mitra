@@ -1,0 +1,332 @@
+[
+  {
+    "id": "seed-phy-units-1",
+    "concept_id": "phy.units",
+    "subject": "Physics",
+    "difficulty": 1,
+    "stem": "Which of the following is a fundamental SI unit?",
+    "options": ["Newton", "Joule", "Kelvin", "Watt"],
+    "correct_index": 2,
+    "explanation": "Kelvin (temperature) is one of the seven base SI units. Newton, Joule and Watt are derived units."
+  },
+  {
+    "id": "seed-phy-kin1d-1",
+    "concept_id": "phy.kinematics.1d",
+    "subject": "Physics",
+    "difficulty": 2,
+    "stem": "A car accelerates uniformly from rest at 2 m/s^2 for 5 s. Its final velocity is:",
+    "options": ["5 m/s", "10 m/s", "15 m/s", "25 m/s"],
+    "correct_index": 1,
+    "explanation": "v = u + at = 0 + 2*5 = 10 m/s."
+  },
+  {
+    "id": "seed-phy-kin2d-1",
+    "concept_id": "phy.kinematics.2d",
+    "subject": "Physics",
+    "difficulty": 3,
+    "stem": "A projectile is launched at 45 degrees with speed 20 m/s. Take g = 10 m/s^2. Its range is:",
+    "options": ["20 m", "28 m", "40 m", "80 m"],
+    "correct_index": 2,
+    "explanation": "R = u^2 sin(2*theta)/g = 400*1/10 = 40 m."
+  },
+  {
+    "id": "seed-phy-newton-1",
+    "concept_id": "phy.newton_laws",
+    "subject": "Physics",
+    "difficulty": 2,
+    "stem": "A 5 kg block is pushed by 20 N on a frictionless surface. Its acceleration is:",
+    "options": ["1 m/s^2", "2 m/s^2", "4 m/s^2", "5 m/s^2"],
+    "correct_index": 2,
+    "explanation": "F = ma => a = 20/5 = 4 m/s^2 by Newton's second law."
+  },
+  {
+    "id": "seed-phy-newton-2",
+    "concept_id": "phy.newton_laws",
+    "subject": "Physics",
+    "difficulty": 4,
+    "stem": "Two blocks of mass 3 kg and 2 kg connected by a string lie on a smooth table. A 25 N horizontal force pulls the 3 kg block. The tension in the string is:",
+    "options": ["5 N", "10 N", "15 N", "25 N"],
+    "correct_index": 1,
+    "explanation": "Common a = 25/5 = 5 m/s^2; tension pulls only the 2 kg block, so T = 2*5 = 10 N."
+  },
+  {
+    "id": "seed-phy-work-1",
+    "concept_id": "phy.work_energy",
+    "subject": "Physics",
+    "difficulty": 2,
+    "stem": "A force of 10 N moves an object 2 m along its line of action. Work done is:",
+    "options": ["5 J", "10 J", "20 J", "40 J"],
+    "correct_index": 2,
+    "explanation": "W = F*d*cos(0) = 10*2 = 20 J."
+  },
+  {
+    "id": "seed-phy-rot-1",
+    "concept_id": "phy.rotational",
+    "subject": "Physics",
+    "difficulty": 3,
+    "stem": "Moment of inertia of a uniform thin rod (mass M, length L) about an axis through its centre and perpendicular to its length is:",
+    "options": ["ML^2/3", "ML^2/12", "ML^2/2", "ML^2/6"],
+    "correct_index": 1,
+    "explanation": "Standard result for a thin rod about its centre: I = ML^2/12."
+  },
+  {
+    "id": "seed-phy-electro-1",
+    "concept_id": "phy.electrostatics",
+    "subject": "Physics",
+    "difficulty": 2,
+    "stem": "Coulomb's law states that the force between two point charges varies as:",
+    "options": ["1/r", "1/r^2", "1/r^3", "1/r^1.5"],
+    "correct_index": 1,
+    "explanation": "F = kq1q2/r^2 - inverse-square law."
+  },
+  {
+    "id": "seed-phy-current-1",
+    "concept_id": "phy.current",
+    "subject": "Physics",
+    "difficulty": 2,
+    "stem": "Three resistors each 6 ohm are connected in parallel. Equivalent resistance is:",
+    "options": ["18 ohm", "6 ohm", "3 ohm", "2 ohm"],
+    "correct_index": 3,
+    "explanation": "1/R = 1/6+1/6+1/6 = 3/6, so R = 2 ohm."
+  },
+  {
+    "id": "seed-phy-thermo-1",
+    "concept_id": "phy.thermo",
+    "subject": "Physics",
+    "difficulty": 3,
+    "stem": "For an isothermal process on an ideal gas, the change in internal energy is:",
+    "options": ["positive", "negative", "zero", "depends on volume"],
+    "correct_index": 2,
+    "explanation": "Internal energy of an ideal gas depends only on temperature, which is constant in an isothermal process."
+  },
+  {
+    "id": "seed-phy-modern-1",
+    "concept_id": "phy.modern",
+    "subject": "Physics",
+    "difficulty": 3,
+    "stem": "The de Broglie wavelength of a particle of momentum p is:",
+    "options": ["h*p", "h/p", "p/h", "1/(hp)"],
+    "correct_index": 1,
+    "explanation": "lambda = h/p (Planck constant divided by momentum)."
+  },
+  {
+    "id": "seed-math-quad-1",
+    "concept_id": "math.quadratic",
+    "subject": "Mathematics",
+    "difficulty": 2,
+    "stem": "Sum of the roots of x^2 - 5x + 6 = 0 is:",
+    "options": ["-5", "5", "6", "-6"],
+    "correct_index": 1,
+    "explanation": "Sum of roots = -b/a = 5."
+  },
+  {
+    "id": "seed-math-trig-1",
+    "concept_id": "math.trig.basics",
+    "subject": "Mathematics",
+    "difficulty": 1,
+    "stem": "sin(30 degrees) equals:",
+    "options": ["1/2", "sqrt(3)/2", "1", "sqrt(2)/2"],
+    "correct_index": 0,
+    "explanation": "Standard value sin(30) = 1/2."
+  },
+  {
+    "id": "seed-math-vec-1",
+    "concept_id": "math.vectors",
+    "subject": "Mathematics",
+    "difficulty": 3,
+    "stem": "If a = i + 2j and b = 2i - j, then a . b equals:",
+    "options": ["0", "1", "3", "5"],
+    "correct_index": 0,
+    "explanation": "Dot product: 1*2 + 2*(-1) = 0."
+  },
+  {
+    "id": "seed-math-vec-2",
+    "concept_id": "math.vectors",
+    "subject": "Mathematics",
+    "difficulty": 4,
+    "stem": "The magnitude of the vector 3i + 4j - 12k is:",
+    "options": ["13", "12", "169", "5"],
+    "correct_index": 0,
+    "explanation": "|v| = sqrt(9+16+144) = sqrt(169) = 13."
+  },
+  {
+    "id": "seed-math-coord-1",
+    "concept_id": "math.coord.2d",
+    "subject": "Mathematics",
+    "difficulty": 2,
+    "stem": "Distance between (1,2) and (4,6) is:",
+    "options": ["3", "4", "5", "7"],
+    "correct_index": 2,
+    "explanation": "sqrt((4-1)^2+(6-2)^2) = sqrt(9+16) = 5."
+  },
+  {
+    "id": "seed-math-perm-1",
+    "concept_id": "math.permcomb",
+    "subject": "Mathematics",
+    "difficulty": 2,
+    "stem": "Number of ways to arrange 4 distinct books on a shelf is:",
+    "options": ["4", "12", "16", "24"],
+    "correct_index": 3,
+    "explanation": "4! = 24."
+  },
+  {
+    "id": "seed-math-prob-1",
+    "concept_id": "math.probability",
+    "subject": "Mathematics",
+    "difficulty": 2,
+    "stem": "A fair coin is tossed twice. Probability of getting at least one head is:",
+    "options": ["1/4", "1/2", "3/4", "1"],
+    "correct_index": 2,
+    "explanation": "P(at least one H) = 1 - P(TT) = 1 - 1/4 = 3/4."
+  },
+  {
+    "id": "seed-math-mat-1",
+    "concept_id": "math.matrices",
+    "subject": "Mathematics",
+    "difficulty": 3,
+    "stem": "If A is a 2x2 matrix with det(A) = 5, then det(2A) is:",
+    "options": ["5", "10", "20", "25"],
+    "correct_index": 2,
+    "explanation": "For an n x n matrix, det(kA) = k^n det(A). Here n=2, so 4*5 = 20."
+  },
+  {
+    "id": "seed-math-deriv-1",
+    "concept_id": "math.derivatives",
+    "subject": "Mathematics",
+    "difficulty": 2,
+    "stem": "d/dx [sin(2x)] equals:",
+    "options": ["cos(2x)", "2cos(2x)", "-2cos(2x)", "2sin(2x)"],
+    "correct_index": 1,
+    "explanation": "Chain rule: d/dx sin(u) = cos(u)*du/dx, with u=2x => 2cos(2x)."
+  },
+  {
+    "id": "seed-math-int-1",
+    "concept_id": "math.integration",
+    "subject": "Mathematics",
+    "difficulty": 2,
+    "stem": "Integral of x^3 with respect to x is:",
+    "options": ["x^2/2 + C", "x^4/4 + C", "3x^2 + C", "x^4 + C"],
+    "correct_index": 1,
+    "explanation": "Power rule: integral x^n dx = x^(n+1)/(n+1) + C."
+  },
+  {
+    "id": "seed-math-limits-1",
+    "concept_id": "math.limits",
+    "subject": "Mathematics",
+    "difficulty": 3,
+    "stem": "lim x->0 sin(x)/x equals:",
+    "options": ["0", "1", "Does not exist", "infinity"],
+    "correct_index": 1,
+    "explanation": "Classic limit; sin(x)/x -> 1 as x->0."
+  },
+  {
+    "id": "seed-math-complex-1",
+    "concept_id": "math.complex",
+    "subject": "Mathematics",
+    "difficulty": 2,
+    "stem": "Modulus of (3 + 4i) is:",
+    "options": ["3", "4", "5", "7"],
+    "correct_index": 2,
+    "explanation": "|3+4i| = sqrt(9+16) = 5."
+  },
+  {
+    "id": "seed-chem-atomic-1",
+    "concept_id": "chem.atomic",
+    "subject": "Chemistry",
+    "difficulty": 1,
+    "stem": "Maximum number of electrons in the L (n=2) shell is:",
+    "options": ["2", "6", "8", "18"],
+    "correct_index": 2,
+    "explanation": "2n^2 = 2*4 = 8."
+  },
+  {
+    "id": "seed-chem-bonding-1",
+    "concept_id": "chem.bonding",
+    "subject": "Chemistry",
+    "difficulty": 2,
+    "stem": "The shape of CH4 (methane) is:",
+    "options": ["Tetrahedral", "Square planar", "Octahedral", "Trigonal planar"],
+    "correct_index": 0,
+    "explanation": "sp3 hybridised carbon -> tetrahedral with bond angle ~109.5 degrees."
+  },
+  {
+    "id": "seed-chem-thermo-1",
+    "concept_id": "chem.thermo",
+    "subject": "Chemistry",
+    "difficulty": 3,
+    "stem": "For a spontaneous process at constant T and P:",
+    "options": ["DeltaG = 0", "DeltaG > 0", "DeltaG < 0", "DeltaH < 0 always"],
+    "correct_index": 2,
+    "explanation": "Gibbs criterion: spontaneous <=> DeltaG < 0."
+  },
+  {
+    "id": "seed-chem-eq-1",
+    "concept_id": "chem.equilibrium",
+    "subject": "Chemistry",
+    "difficulty": 3,
+    "stem": "For the reaction N2 + 3H2 <=> 2NH3, increasing pressure favours:",
+    "options": ["Forward direction", "Reverse direction", "No change", "Both equally"],
+    "correct_index": 0,
+    "explanation": "Le Chatelier: pressure shift favours fewer moles of gas (4 -> 2 forward)."
+  },
+  {
+    "id": "seed-chem-redox-1",
+    "concept_id": "chem.redox",
+    "subject": "Chemistry",
+    "difficulty": 2,
+    "stem": "Oxidation number of Mn in KMnO4 is:",
+    "options": ["+2", "+4", "+6", "+7"],
+    "correct_index": 3,
+    "explanation": "K(+1) + Mn(x) + 4*O(-2) = 0 => x = +7."
+  },
+  {
+    "id": "seed-chem-electrochem-1",
+    "concept_id": "chem.electrochem",
+    "subject": "Chemistry",
+    "difficulty": 3,
+    "stem": "1 Faraday is approximately equal to:",
+    "options": ["96 C", "9650 C", "96500 C", "965 C"],
+    "correct_index": 2,
+    "explanation": "1 F = 96485 C/mol of electrons; ~96500 C is the standard rounded value."
+  },
+  {
+    "id": "seed-chem-kin-1",
+    "concept_id": "chem.kinetics",
+    "subject": "Chemistry",
+    "difficulty": 3,
+    "stem": "For a first-order reaction, half-life depends on:",
+    "options": ["Initial concentration only", "Rate constant only", "Both", "Neither"],
+    "correct_index": 1,
+    "explanation": "t1/2 = 0.693/k, independent of [A]_0 for first-order kinetics."
+  },
+  {
+    "id": "seed-chem-coord-1",
+    "concept_id": "chem.coord",
+    "subject": "Chemistry",
+    "difficulty": 4,
+    "stem": "EDTA is a:",
+    "options": ["Monodentate ligand", "Bidentate ligand", "Hexadentate ligand", "Ambidentate ligand"],
+    "correct_index": 2,
+    "explanation": "EDTA donates from 2 N + 4 O atoms = 6 sites (hexadentate)."
+  },
+  {
+    "id": "seed-chem-org-basics-1",
+    "concept_id": "chem.org.basics",
+    "subject": "Chemistry",
+    "difficulty": 2,
+    "stem": "Hyperconjugation is most significant in:",
+    "options": ["Methane", "tert-butyl cation", "Methyl cation", "Ethane"],
+    "correct_index": 1,
+    "explanation": "More alpha-H atoms => more hyperconjugation; (CH3)3C+ has 9."
+  },
+  {
+    "id": "seed-chem-org-hc-1",
+    "concept_id": "chem.org.hydrocarbons",
+    "subject": "Chemistry",
+    "difficulty": 2,
+    "stem": "Markovnikov's rule applies to:",
+    "options": ["Alkene + HX", "Alkane combustion", "SN2 substitution", "Esterification"],
+    "correct_index": 0,
+    "explanation": "Addition of HX to an alkene: H goes to the carbon with more H atoms."
+  }
+]
