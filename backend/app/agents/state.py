@@ -75,7 +75,7 @@ class StudentState(BaseModel):
     """The root state hydrated for every graph run."""
 
     user_id: str
-    target_exam: Literal["JEE_MAIN", "NEET"] = "JEE_MAIN"
+    target_exam: str = "JEE_MAIN"
     exam_date: str | None = None  # YYYY-MM-DD
     daily_hours: float = 3.0
 

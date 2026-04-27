@@ -2,47 +2,68 @@
 
 import { useEffect, useState } from "react";
 
-const KEY_GEMINI = "pm.gemini_key";
-const KEY_GROQ = "pm.groq_key";
 const KEY_USER = "pm.user_id";
 
 export type ApiKeyState = {
-  gemini: string;
-  groq: string;
   userId: string;
 };
 
+/** In-memory fallback when localStorage is unavailable (private mode, quota, policy). */
+let memoryUserId = "";
+
 export function loadKeys(): ApiKeyState {
-  if (typeof window === "undefined") return { gemini: "", groq: "", userId: "" };
-  return {
-    gemini: window.localStorage.getItem(KEY_GEMINI) ?? "",
-    groq: window.localStorage.getItem(KEY_GROQ) ?? "",
-    userId: window.localStorage.getItem(KEY_USER) ?? "",
-  };
+  if (typeof window === "undefined") {
+    return { userId: memoryUserId };
+  }
+  try {
+    const u = window.localStorage.getItem(KEY_USER) ?? "";
+    memoryUserId = u;
+    return { userId: u };
+  } catch {
+    return { userId: memoryUserId };
+  }
 }
 
 export function saveKeys(next: Partial<ApiKeyState>): ApiKeyState {
   const cur = loadKeys();
   const merged = { ...cur, ...next };
   if (typeof window !== "undefined") {
-    if (next.gemini !== undefined) window.localStorage.setItem(KEY_GEMINI, merged.gemini);
-    if (next.groq !== undefined) window.localStorage.setItem(KEY_GROQ, merged.groq);
-    if (next.userId !== undefined) window.localStorage.setItem(KEY_USER, merged.userId);
-    window.dispatchEvent(new CustomEvent("pm:keys-updated", { detail: merged }));
+    try {
+      if (next.userId !== undefined) {
+        window.localStorage.setItem(KEY_USER, merged.userId);
+      }
+    } catch {
+      /* ignore quota / disabled storage */
+    }
+    memoryUserId = merged.userId;
+    try {
+      window.dispatchEvent(new CustomEvent("pm:keys-updated", { detail: merged }));
+    } catch {
+      /* ignore */
+    }
+  } else {
+    if (next.userId !== undefined) memoryUserId = merged.userId;
   }
   return merged;
 }
 
 export function clearKeys() {
+  memoryUserId = "";
   if (typeof window === "undefined") return;
-  window.localStorage.removeItem(KEY_GEMINI);
-  window.localStorage.removeItem(KEY_GROQ);
-  window.localStorage.removeItem(KEY_USER);
-  window.dispatchEvent(new CustomEvent("pm:keys-updated"));
+  try {
+    window.localStorage.removeItem(KEY_USER);
+  } catch {
+    /* ignore */
+  }
+  try {
+    window.dispatchEvent(new CustomEvent("pm:keys-updated"));
+  } catch {
+    /* ignore */
+  }
 }
 
 export function useApiKeys(): [ApiKeyState, (next: Partial<ApiKeyState>) => void] {
-  const [state, setState] = useState<ApiKeyState>({ gemini: "", groq: "", userId: "" });
+  const [state, setState] = useState<ApiKeyState>({ userId: "" });
 
   useEffect(() => {
     setState(loadKeys());

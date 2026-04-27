@@ -48,19 +48,24 @@ See `DEMO.md` for the 90-second walkthrough script and
 
 ## Quick start (local)
 
+**Windows (recommended):** from the repo root run **`.\start-local.ps1`** — it opens two terminals (FastAPI on **8020** + Next.js) and your browser. Uses `C:\venvs\ParikshaMitra` when present; see `guide.md` if you need to create that venv.
+
 ```powershell
 # 1. Backend
 cd backend
 python -m venv .venv
 . .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-copy .env.example .env  # edit if you want a dev fallback key
-uvicorn app.main:app --reload --port 8000
+copy .env.example .env  # add DEFAULT_GEMINI_API_KEY for live LLM (optional; stubs work without it)
+python -m uvicorn app.main:app --reload --port 8000
+
+# Or: .\run-dev.ps1   (picks C:\venvs\ParikshaMitra or .venv)
+# Or: $env:UVICORN_PORT='8020'; .\run-dev.ps1   if port 8000 is broken / busy
 
 # 2. Frontend (in a second terminal)
 cd frontend
 npm install
-npm run dev   # http://localhost:3000
+npm run dev   # http://localhost:3000 — uses /pm-api proxy (see frontend/.env.local)
 ```
 
 Open the app, click **Add key**, paste your free Gemini API key from
@@ -80,7 +85,11 @@ parikshamitra/
 
 See `implementation_plan.md` and `progress.md` for the running checklist.
 
+**AI coding assistants (Claude Code, etc.):** read **`CLAUDE.md`** in the repo root for a self-contained handbook (env, scripts, API map, deploy, troubleshooting). **`guide.md`** is the long human setup walkthrough.
+
 ## Deploying for free (HF Spaces + Vercel + Turso)
+
+**Step-by-step online deployment (extensive):** see **[`DEPLOY_ONLINE.md`](./DEPLOY_ONLINE.md)** in the repo root.
 
 The whole stack runs on free tiers, no credit card required. Three pieces:
 

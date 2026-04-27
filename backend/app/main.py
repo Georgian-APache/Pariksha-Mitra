@@ -25,9 +25,11 @@ def create_app() -> FastAPI:
         description="Agentic AI study companion for Indian competitive exams.",
         lifespan=lifespan,
     )
+    # Regex covers any dev port (e.g. :3001 when :3000 is busy) for localhost / 127.0.0.1.
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,
+        allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?$",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

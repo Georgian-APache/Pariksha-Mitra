@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
+import { AppErrorBoundary } from "@/components/AppErrorBoundary";
 import { Header } from "@/components/Header";
+import { TeamCredit } from "@/components/TeamCredit";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { VoiceMic } from "@/components/VoiceMic";
 
@@ -44,8 +46,9 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <Header />
         <main className="flex-1 px-4 sm:px-6 lg:px-10 py-6 max-w-7xl w-full mx-auto">
-          {children}
+          <AppErrorBoundary>{children}</AppErrorBoundary>
         </main>
+        <TeamCredit variant="footer" />
         <VoiceMic />
         <Toaster theme="dark" richColors position="top-right" />
         <ThemeProvider />

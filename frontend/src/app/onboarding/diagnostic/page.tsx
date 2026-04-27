@@ -28,8 +28,26 @@ export default function DiagnosticPage() {
       return;
     }
     try {
-      setQuestions(JSON.parse(raw) as Question[]);
+      const parsed = JSON.parse(raw);
+      if (
+        !Array.isArray(parsed) ||
+        parsed.length === 0 ||
+        !parsed.every(
+          (q) =>
+            q &&
+            typeof q === "object" &&
+            typeof q.id === "string" &&
+            typeof q.stem === "string" &&
+            Array.isArray(q.options),
+        )
+      ) {
+        sessionStorage.removeItem("pm.diagnostic.questions");
+        router.replace("/onboarding");
+        return;
+      }
+      setQuestions(parsed as Question[]);
     } catch {
+      sessionStorage.removeItem("pm.diagnostic.questions");
       router.replace("/onboarding");
     }
   }, [router]);

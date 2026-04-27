@@ -30,7 +30,7 @@ class User(Base):
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=_uuid)
     display_name: Mapped[str] = mapped_column(String(120), default="Student")
-    target_exam: Mapped[str] = mapped_column(String(32), default="JEE_MAIN")
+    target_exam: Mapped[str] = mapped_column(String(120), default="JEE_MAIN")
     exam_date: Mapped[str | None] = mapped_column(String(20), nullable=True)
     daily_hours: Mapped[float] = mapped_column(Float, default=3.0)
     streak_days: Mapped[int] = mapped_column(Integer, default=0)

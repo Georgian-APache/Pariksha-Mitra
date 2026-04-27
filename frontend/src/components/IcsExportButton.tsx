@@ -2,7 +2,7 @@
 
 import { CalendarDays } from "lucide-react";
 import { Button, type ButtonProps } from "@/components/ui/Button";
-import { API_URL } from "@/lib/api";
+import { absoluteApiUrl } from "@/lib/api";
 import { cn } from "@/lib/cn";
 
 type Props = Omit<ButtonProps, "asChild" | "children"> & {
@@ -16,7 +16,7 @@ type Props = Omit<ButtonProps, "asChild" | "children"> & {
  */
 export function IcsExportButton({ userId, label = "Add to calendar", className, variant = "outline", size = "sm", ...rest }: Props) {
   if (!userId) return null;
-  const href = `${API_URL}/calendar/${encodeURIComponent(userId)}.ics`;
+  const href = absoluteApiUrl(`/calendar/${encodeURIComponent(userId)}.ics`);
   return (
     <Button
       asChild

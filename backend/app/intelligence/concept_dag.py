@@ -93,12 +93,22 @@ class ConceptDAG:
         return {"nodes": nodes, "edges": edges, "subjects": self.subjects, "exam": self.exam}
 
 
-@lru_cache(maxsize=4)
+def _dag_json_for_exam(exam: str) -> str:
+    """NEET uses the biology-heavy graph; JEE_MAIN, GATE, and custom exams use the engineering graph."""
+
+    u = (exam or "JEE_MAIN").strip().upper()
+    if u == "NEET":
+        return "neet_dag.json"
+    return "jee_dag.json"
+
+
+@lru_cache(maxsize=64)
 def get_dag(exam: str = "JEE_MAIN") -> ConceptDAG:
-    fname = "jee_dag.json" if exam.upper() == "JEE_MAIN" else "neet_dag.json"
+    fname = _dag_json_for_exam(exam)
     path = Path(DATA_DIR) / fname
     payload = json.loads(path.read_text(encoding="utf-8"))
-    return ConceptDAG(exam.upper(), payload)
+    label = (exam or "JEE_MAIN").strip()[:80] or "JEE_MAIN"
+    return ConceptDAG(label.upper(), payload)
 
 
 def weak_prerequisites(

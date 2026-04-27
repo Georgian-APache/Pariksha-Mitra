@@ -91,7 +91,16 @@ export default function DoubtPage() {
             {preview ? (
               <div className="relative rounded-lg overflow-hidden border border-border bg-background/40">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={preview} alt="doubt" className="w-full max-h-[60vh] object-contain" />
+                <img
+                  src={preview}
+                  alt="doubt"
+                  className="w-full max-h-[60vh] object-contain"
+                  onError={() => {
+                    setPreview(null);
+                    setFile(null);
+                    toast.error("Could not preview the image. Pick a different one.");
+                  }}
+                />
               </div>
             ) : (
               <button

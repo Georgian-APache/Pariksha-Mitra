@@ -1,10 +1,8 @@
-"""Centralised settings + BYOK key extraction.
+"""Centralised settings + API key resolution.
 
-Each request from the frontend carries the user's free Gemini / Groq API keys
-in HTTP headers (``X-Gemini-Key``, ``X-Groq-Key``). We never persist them.
-A server-side fallback (``DEFAULT_GEMINI_API_KEY`` / ``DEFAULT_GROQ_API_KEY``)
-can be set in ``.env`` for local dev so you don't have to paste a key every
-restart - in production these are unset and BYOK is mandatory.
+Keys are resolved in order: per-request headers (``X-Gemini-Key``, ``X-Groq-Key``)
+if present, otherwise ``DEFAULT_GEMINI_API_KEY`` / ``DEFAULT_GROQ_API_KEY`` from
+the environment. Header keys are never persisted.
 """
 
 from __future__ import annotations
@@ -88,8 +86,8 @@ class APIKeys:
             raise HTTPException(
                 status_code=401,
                 detail=(
-                    f"Missing {provider} API key. Paste a free key in the app "
-                    f"(Settings -> API Keys) or set DEFAULT_{provider.upper()}_API_KEY in .env."
+                    f"Missing {provider} API key. Set DEFAULT_{provider.upper()}_API_KEY "
+                    "on the server or send the appropriate X-*-Key header."
                 ),
             )
         return key
@@ -99,7 +97,7 @@ def api_keys(
     x_gemini_key: str | None = Header(default=None, alias="X-Gemini-Key"),
     x_groq_key: str | None = Header(default=None, alias="X-Groq-Key"),
 ) -> APIKeys:
-    """FastAPI dependency that extracts BYOK keys with optional .env fallback."""
+    """FastAPI dependency: header keys override server defaults from settings."""
 
     s = get_settings()
     return APIKeys(

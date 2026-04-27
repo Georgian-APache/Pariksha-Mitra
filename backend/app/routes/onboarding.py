@@ -12,7 +12,7 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agents.orchestrator import run_diagnostic
@@ -29,10 +29,33 @@ router = APIRouter(prefix="/onboard", tags=["onboarding"])
 
 class StartRequest(BaseModel):
     user_id: str | None = None
-    display_name: str = "Student"
-    target_exam: str = "JEE_MAIN"
+    display_name: str = Field(default="Student", max_length=120)
+    target_exam: str = Field(
+        default="JEE_MAIN",
+        max_length=120,
+        description="JEE_MAIN, NEET, GATE, or a custom exam label (uses JEE concept graph except NEET).",
+    )
     exam_date: str | None = None
     daily_hours: float = Field(default=3.0, ge=0.5, le=16)
+
+    @staticmethod
+    def _normalize_exam(raw: str) -> str:
+        t = (raw or "JEE_MAIN").strip()
+        if not t:
+            return "JEE_MAIN"
+        u = t.upper()
+        if u in ("JEE", "JEE MAIN", "JEE-MAIN"):
+            return "JEE_MAIN"
+        if u in ("NEET", "NEET UG", "NEET-UG"):
+            return "NEET"
+        if u in ("GATE",):
+            return "GATE"
+        return t[:120]
+
+    @model_validator(mode="after")
+    def normalize_target_exam(self) -> StartRequest:
+        self.target_exam = self._normalize_exam(self.target_exam)
+        return self
 
 
 class StartResponse(BaseModel):

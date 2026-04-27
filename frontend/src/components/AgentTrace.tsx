@@ -12,7 +12,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
-import { API_URL } from "@/lib/api";
+import { absoluteApiUrl } from "@/lib/api";
 import type { AgentStep } from "@/lib/types";
 
 const ICONS: Record<AgentStep["agent"], typeof Brain> = {
@@ -36,6 +36,7 @@ const COLORS: Record<AgentStep["agent"], string> = {
 export function AgentTrace({ runId }: { runId: string | null }) {
   const [steps, setSteps] = useState<AgentStep[]>([]);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const lastRunId = useRef<string | null>(null);
 
   useEffect(() => {
@@ -43,8 +44,9 @@ export function AgentTrace({ runId }: { runId: string | null }) {
     lastRunId.current = runId;
     setSteps([]);
     setDone(false);
+    setError(null);
 
-    const es = new EventSource(`${API_URL}/stream/agent-trace/${runId}`);
+    const es = new EventSource(absoluteApiUrl(`/stream/agent-trace/${runId}`));
     es.addEventListener("step", (ev) => {
       try {
         const step: AgentStep = JSON.parse((ev as MessageEvent).data);
@@ -58,9 +60,10 @@ export function AgentTrace({ runId }: { runId: string | null }) {
       es.close();
     });
     es.onerror = () => {
-      // Auto-close on error to avoid endless retry loop
+      // EventSource auto-retries by default; close to surface a clear state.
       es.close();
       setDone(true);
+      setError("Connection lost before the run finished.");
     };
     return () => es.close();
   }, [runId]);
@@ -78,10 +81,16 @@ export function AgentTrace({ runId }: { runId: string | null }) {
     <div className="space-y-2">
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5">
-          <span className={`relative size-2 rounded-full ${done ? "bg-muted" : "bg-accent"}`}>
-            {!done && <span className="absolute inset-0 rounded-full bg-accent animate-ping opacity-60" />}
+          <span
+            className={`relative size-2 rounded-full ${
+              error ? "bg-destructive" : done ? "bg-muted" : "bg-accent"
+            }`}
+          >
+            {!done && !error && (
+              <span className="absolute inset-0 rounded-full bg-accent animate-ping opacity-60" />
+            )}
           </span>
-          {done ? "Trace complete" : "Agents thinking..."}
+          {error ? "Connection lost" : done ? "Trace complete" : "Agents thinking..."}
         </span>
         <Badge variant="outline" className="text-[10px]">{steps.length} steps</Badge>
       </div>

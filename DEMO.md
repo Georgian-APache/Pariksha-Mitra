@@ -7,7 +7,7 @@
 1. Both servers running:
    ```powershell
    # Terminal 1
-   cd backend; .\.venv\Scripts\Activate.ps1; uvicorn app.main:app --port 8000
+   cd backend; .\.venv\Scripts\Activate.ps1; python -m uvicorn app.main:app --port 8000
 
    # Terminal 2
    cd frontend; npm run dev

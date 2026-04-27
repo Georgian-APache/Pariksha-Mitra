@@ -29,17 +29,35 @@ export default function GraphPage() {
   const [keys] = useApiKeys();
   const [data, setData] = useState<GraphResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<{ id: string; label: string } | null>(null);
 
-  useEffect(() => {
+  async function load(signal?: AbortSignal) {
     if (!keys.userId) {
       setLoading(false);
       return;
     }
-    api<GraphResponse>(`/graph/${keys.userId}`)
-      .then(setData)
-      .catch((e) => toast.error((e as Error).message))
-      .finally(() => setLoading(false));
+    setLoading(true);
+    setError(null);
+    try {
+      const d = await api<GraphResponse>(`/graph/${keys.userId}`, { signal });
+      if (signal?.aborted) return;
+      setData(d);
+    } catch (err) {
+      if ((err as Error)?.name === "AbortError" || signal?.aborted) return;
+      const msg = (err as Error).message || "Could not load graph";
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      if (!signal?.aborted) setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    const ctrl = new AbortController();
+    void load(ctrl.signal);
+    return () => ctrl.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keys.userId]);
 
   if (!keys.userId) {
@@ -52,10 +70,22 @@ export default function GraphPage() {
     );
   }
 
-  if (loading || !data) {
+  if (loading) {
     return (
       <div className="flex items-center gap-2 text-muted-foreground py-12">
         <Loader2 className="size-4 animate-spin" /> Building your concept graph...
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="max-w-md mx-auto py-12 text-center space-y-4">
+        <h2 className="text-lg font-semibold">Could not build the concept graph</h2>
+        <p className="text-sm text-muted-foreground">
+          {error || "The graph request failed. Check your connection and try again."}
+        </p>
+        <Button onClick={() => void load()}>Retry</Button>
       </div>
     );
   }

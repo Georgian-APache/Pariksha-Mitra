@@ -67,6 +67,7 @@ function QuizPageInner() {
   const [completed, setCompleted] = useState(false);
   const [finishResult, setFinishResult] = useState<FinishResponse | null>(null);
   const [traceRunId, setTraceRunId] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const startedAt = useRef<number>(0);
 
   useEffect(() => {
@@ -75,17 +76,20 @@ function QuizPageInner() {
       router.replace("/onboarding");
       return;
     }
-    void start();
+    const ctrl = new AbortController();
+    void start(ctrl.signal);
+    return () => ctrl.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keys.userId, conceptParam]);
 
-  async function start() {
+  async function start(signal?: AbortSignal) {
     setBusy(true);
     setCompleted(false);
     setGrade(null);
     setChosen(null);
     setFinishResult(null);
     setTraceRunId(null);
+    setLoadError(null);
     try {
       const res = await api<StartResponse>("/quiz/start", {
         method: "POST",
@@ -95,16 +99,21 @@ function QuizPageInner() {
           n_questions: 5,
           kind: conceptParam ? "drill" : "adaptive",
         },
+        signal,
       });
+      if (signal?.aborted) return;
       setSessionId(res.session_id);
       setQuestion(res.question);
       setProgress(res.progress);
       setCat(res.cat);
       startedAt.current = Date.now();
     } catch (err) {
-      toast.error((err as Error).message);
+      if ((err as Error)?.name === "AbortError" || signal?.aborted) return;
+      const msg = (err as Error).message || "Could not start quiz";
+      setLoadError(msg);
+      toast.error(msg);
     } finally {
-      setBusy(false);
+      if (!signal?.aborted) setBusy(false);
     }
   }
 
@@ -231,7 +240,7 @@ function QuizPageInner() {
               CAT-lite difficulty: <span className="font-medium">Level {cat.level}/5</span>
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => start()} disabled={busy}>
+          <Button variant="outline" size="sm" onClick={() => void start()} disabled={busy}>
             <RefreshCcw className="size-4" /> Restart
           </Button>
         </div>
@@ -240,9 +249,19 @@ function QuizPageInner() {
 
         {!question ? (
           <Card>
-            <CardContent className="p-12 text-center text-muted-foreground">
-              <Loader2 className="size-5 animate-spin mx-auto mb-3" />
-              Generating your first question...
+            <CardContent className="p-12 text-center text-muted-foreground space-y-3">
+              {loadError ? (
+                <>
+                  <p className="text-sm font-medium text-destructive">Could not start the quiz</p>
+                  <p className="text-xs">{loadError}</p>
+                  <Button onClick={() => void start()} disabled={busy}>Retry</Button>
+                </>
+              ) : (
+                <>
+                  <Loader2 className="size-5 animate-spin mx-auto mb-3" />
+                  Generating your first question...
+                </>
+              )}
             </CardContent>
           </Card>
         ) : (

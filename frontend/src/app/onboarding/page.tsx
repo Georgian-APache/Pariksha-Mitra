@@ -1,36 +1,48 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, GraduationCap, KeyRound, Loader2 } from "lucide-react";
+import { ArrowRight, GraduationCap, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { KeyModal } from "@/components/KeyModal";
 import { api } from "@/lib/api";
 import { saveKeys, useApiKeys } from "@/lib/byok";
 import type { DiagnosticStartResponse } from "@/lib/types";
 
+type ExamChoice = "JEE_MAIN" | "NEET" | "GATE" | "OTHER";
+
+const EXAM_OPTIONS: { id: ExamChoice; label: string }[] = [
+  { id: "JEE_MAIN", label: "JEE Main" },
+  { id: "NEET", label: "NEET UG" },
+  { id: "GATE", label: "GATE" },
+  { id: "OTHER", label: "Other" },
+];
+
+function buildTargetExam(choice: ExamChoice, custom: string): string {
+  if (choice === "OTHER") {
+    const t = custom.trim().slice(0, 120);
+    return t.length > 0 ? t : "Custom exam";
+  }
+  return choice;
+}
+
 export default function OnboardingPage() {
   const [keys] = useApiKeys();
   const router = useRouter();
-  const [keyOpen, setKeyOpen] = useState(false);
   const [name, setName] = useState("Student");
-  const [exam, setExam] = useState<"JEE_MAIN" | "NEET">("JEE_MAIN");
+  const [examChoice, setExamChoice] = useState<ExamChoice>("JEE_MAIN");
+  const [customExam, setCustomExam] = useState("");
   const [examDate, setExamDate] = useState("2026-04-19");
   const [hours, setHours] = useState(3);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!keys.gemini) setKeyOpen(true);
-  }, [keys.gemini]);
-
   async function startDiagnostic() {
-    if (!keys.gemini) {
-      setKeyOpen(true);
+    if (examChoice === "OTHER" && !customExam.trim()) {
+      toast.error("Enter your exam name, or pick JEE / NEET / GATE.");
       return;
     }
     setLoading(true);
@@ -39,7 +51,7 @@ export default function OnboardingPage() {
         method: "POST",
         body: {
           display_name: name,
-          target_exam: exam,
+          target_exam: buildTargetExam(examChoice, customExam),
           exam_date: examDate,
           daily_hours: hours,
           user_id: keys.userId || undefined,
@@ -74,27 +86,44 @@ export default function OnboardingPage() {
             <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Target exam</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {(["JEE_MAIN", "NEET"] as const).map((e) => (
-                  <button
-                    key={e}
-                    type="button"
-                    onClick={() => setExam(e)}
-                    className={`h-10 rounded-md border text-sm transition ${
-                      exam === e
-                        ? "border-primary bg-primary/15 text-primary"
-                        : "border-border hover:bg-input/40"
-                    }`}
-                  >
-                    {e === "JEE_MAIN" ? "JEE Main" : "NEET UG"}
-                  </button>
-                ))}
-              </div>
+          <div className="space-y-2">
+            <Label>Target exam</Label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {EXAM_OPTIONS.map(({ id, label }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setExamChoice(id)}
+                  className={`h-10 rounded-md border text-sm transition px-2 ${
+                    examChoice === id
+                      ? "border-primary bg-primary/15 text-primary"
+                      : "border-border hover:bg-input/40"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
+            {examChoice === "OTHER" && (
+              <div className="space-y-1.5 pt-1">
+                <Label htmlFor="custom-exam" className="text-xs text-muted-foreground">
+                  Exam name (e.g. CAT, UPSC CSE, State CET)
+                </Label>
+                <Input
+                  id="custom-exam"
+                  placeholder="Type your exam name"
+                  value={customExam}
+                  onChange={(e) => setCustomExam(e.target.value)}
+                  maxLength={120}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Uses the same subject graph as JEE for planning and diagnostics (NEET keeps the biology-heavy graph).
+                </p>
+              </div>
+            )}
+          </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="date">Exam date</Label>
               <Input
@@ -125,37 +154,25 @@ export default function OnboardingPage() {
             </div>
           </div>
 
-          {!keys.gemini ? (
-            <Button
-              variant="default"
-              className="w-full"
-              onClick={() => setKeyOpen(true)}
-            >
-              <KeyRound className="size-4" /> Add your free Gemini key first
-            </Button>
-          ) : (
-            <Button
-              size="lg"
-              className="w-full"
-              onClick={startDiagnostic}
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" /> Generating questions...
-                </>
-              ) : (
-                <>
-                  <GraduationCap className="size-4" /> Start 15-question diagnostic
-                  <ArrowRight className="size-4" />
-                </>
-              )}
-            </Button>
-          )}
+          <Button
+            size="lg"
+            className="w-full"
+            onClick={startDiagnostic}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="size-4 animate-spin" /> Generating questions...
+              </>
+            ) : (
+              <>
+                <GraduationCap className="size-4" /> Start 15-question diagnostic
+                <ArrowRight className="size-4" />
+              </>
+            )}
+          </Button>
         </CardContent>
       </Card>
-
-      <KeyModal open={keyOpen} onOpenChange={setKeyOpen} />
     </div>
   );
 }

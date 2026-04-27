@@ -27,3 +27,6 @@ Thumbs.db
 # Editors
 .vscode/
 .idea/
+pour_la_claudecode.md
+deploy-auto.sh
+deploy.sh

@@ -12,8 +12,6 @@ from __future__ import annotations
 import math
 import statistics
 from datetime import date, datetime
-from typing import Literal
-
 import numpy as np
 from pydantic import BaseModel
 
@@ -38,8 +36,9 @@ def _readiness_to_percentile(readiness: float, exam: str) -> float:
       - readiness 90 -> ~98 percentile
     """
 
-    # JEE is more compressed at the top, NEET is similar.
-    midpoint = 45.0 if exam.upper() == "JEE_MAIN" else 50.0
+    # NEET uses a slightly higher midpoint; JEE / GATE / other exams use JEE-style curve.
+    u = (exam or "JEE_MAIN").strip().upper()
+    midpoint = 50.0 if u == "NEET" else 45.0
     k = 0.085
     p = 100.0 / (1.0 + math.exp(-k * (readiness - midpoint)))
     return max(0.0, min(99.99, p))
@@ -93,7 +92,7 @@ def simulate_rank(
     current_readiness: float,
     exam_date: date | str,
     *,
-    exam: Literal["JEE_MAIN", "NEET"] = "JEE_MAIN",
+    exam: str = "JEE_MAIN",
     history: list[dict] | None = None,
     n_samples: int = 2000,
     seed: int = 7,

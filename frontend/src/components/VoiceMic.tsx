@@ -64,11 +64,6 @@ export function VoiceMic() {
       setStatus("error");
       return;
     }
-    if (!keys.gemini) {
-      setError("Add your free Gemini key first (top-right key button).");
-      setStatus("error");
-      return;
-    }
     reset();
     setStatus("listening");
     recRef.current = startRecognition(lang, {

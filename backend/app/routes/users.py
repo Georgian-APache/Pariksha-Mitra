@@ -16,7 +16,7 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 class UserCreateRequest(BaseModel):
     display_name: str = Field(default="Student", max_length=120)
-    target_exam: str = Field(default="JEE_MAIN")
+    target_exam: str = Field(default="JEE_MAIN", max_length=120)
     exam_date: str | None = Field(default=None, description="YYYY-MM-DD")
     daily_hours: float = Field(default=3.0, ge=0.5, le=16)
 

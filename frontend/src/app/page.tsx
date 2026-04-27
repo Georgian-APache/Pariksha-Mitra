@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import {
   Brain,
   Compass,
@@ -9,15 +8,13 @@ import {
   Network,
   Mic,
   TrendingUp,
-  KeyRound,
   Sparkles,
   Activity,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
-import { KeyModal } from "@/components/KeyModal";
-import { useApiKeys } from "@/lib/byok";
+import { TeamCredit } from "@/components/TeamCredit";
 
 const surprises = [
   {
@@ -53,9 +50,6 @@ const surprises = [
 ];
 
 export default function Home() {
-  const [keys] = useApiKeys();
-  const [keyOpen, setKeyOpen] = useState(false);
-
   return (
     <div className="space-y-12 py-6">
       <section className="grid lg:grid-cols-[1.1fr_0.9fr] gap-10 items-center">
@@ -69,6 +63,7 @@ export default function Home() {
               {`\u092A\u0930\u0940\u0915\u094D\u0937\u093E \u092E\u093F\u0924\u094D\u0930`}
             </span>
           </h1>
+          <TeamCredit variant="hero" />
           <p className="text-lg text-muted-foreground max-w-xl">
             An agentic AI study companion for JEE, NEET and other Indian competitive
             exams. A 4+1 LangGraph cognitive architecture - Orchestrator, Planner,
@@ -79,18 +74,11 @@ export default function Home() {
             <Button asChild size="lg">
               <Link href="/onboarding">Start free diagnostic</Link>
             </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => setKeyOpen(true)}
-            >
-              <KeyRound className="size-4" /> {keys.gemini ? "Update keys" : "Paste your free Gemini key"}
-            </Button>
           </div>
           <div className="flex flex-wrap gap-2 pt-2">
             <Badge variant="default">LangGraph 4+1</Badge>
             <Badge variant="accent">Gemini 2.0 / 2.5 Flash</Badge>
-            <Badge variant="success">Zero-cost BYOK</Badge>
+            <Badge variant="success">Server-hosted AI</Badge>
             <Badge variant="warning">SM-2 + CAT-lite</Badge>
           </div>
         </div>
@@ -148,8 +136,6 @@ export default function Home() {
           ))}
         </div>
       </section>
-
-      <KeyModal open={keyOpen} onOpenChange={setKeyOpen} />
     </div>
   );
 }

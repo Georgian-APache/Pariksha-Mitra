@@ -46,6 +46,7 @@ type GroundedQuiz = {
 export default function LibraryPage() {
   const [keys] = useApiKeys();
   const [docs, setDocs] = useState<Doc[]>([]);
+  const [docsError, setDocsError] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [topic, setTopic] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -56,18 +57,25 @@ export default function LibraryPage() {
   const [chosen, setChosen] = useState<Record<number, number>>({});
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  async function refresh() {
+  async function refresh(signal?: AbortSignal) {
     if (!keys.userId) return;
+    setDocsError(null);
     try {
-      const res = await api<{ documents: Doc[] }>(`/rag/docs/${keys.userId}`);
+      const res = await api<{ documents: Doc[] }>(`/rag/docs/${keys.userId}`, { signal });
+      if (signal?.aborted) return;
       setDocs(res.documents);
     } catch (err) {
-      toast.error((err as Error).message);
+      if ((err as Error)?.name === "AbortError" || signal?.aborted) return;
+      const msg = (err as Error).message || "Could not load chapters";
+      setDocsError(msg);
+      toast.error(msg);
     }
   }
 
   useEffect(() => {
-    void refresh();
+    const ctrl = new AbortController();
+    void refresh(ctrl.signal);
+    return () => ctrl.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keys.userId]);
 
@@ -174,7 +182,13 @@ export default function LibraryPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {docs.length === 0 ? (
+            {docsError ? (
+              <div className="text-sm space-y-2">
+                <p className="text-destructive">Could not load chapters.</p>
+                <p className="text-xs text-muted-foreground">{docsError}</p>
+                <Button size="sm" variant="outline" onClick={() => void refresh()}>Retry</Button>
+              </div>
+            ) : docs.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 No chapters yet. Upload one above.
               </p>
