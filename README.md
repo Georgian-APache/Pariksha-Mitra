@@ -2,7 +2,7 @@
 
 > An AI that studies you, so you can study smarter. An agentic AI study companion for Indian competitive exams.
 
-Built better than the deck, on a strict zero-cost stack, in 2 days.
+Built better than the deck, in 24 hours.
 
 ## What's in the box
 
@@ -34,8 +34,6 @@ A live LangGraph **4+1** cognitive architecture (Orchestrator + Planner + QuizMa
 11. **AI dashboard insight** - Gemini reasoning model writes a 2-sentence EN+HI brief on what to do next
 12. **Light/dark theme toggle** - OKLCH palettes with AA contrast in both modes
 
-See `DEMO.md` for the 90-second walkthrough script and
-`implementation_plan.md` + `progress.md` for the live engineering log.
 
 ## Stack
 
