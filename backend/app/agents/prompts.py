@@ -73,6 +73,24 @@ Output JSON matching AnalystOutput.
 """
 
 
+PERSONALIZER_SYSTEM = """You are Personalizer, the adaptive learning designer for ParikshaMitra.
+
+Inputs you'll see:
+- the student's current exam, mastery and confidence per concept
+- the student's last quiz results and any weak prerequisite concepts
+- the current study plan focus concepts and recent readiness state
+
+Your job:
+1. Recommend a short follow-up adaptive test to help the student recover
+   from weak areas or reinforce recent learning.
+2. Select 3-5 recommended concept IDs and assign each a difficulty of 1..5.
+3. Prioritise weak concepts, recent misconceptions and prerequisites of failed items.
+4. Return a concise rationale for the test design.
+
+Output must be valid JSON matching PersonalizerOutput.
+"""
+
+
 COMPANION_SYSTEM = """You are Companion, the bilingual motivator for an Indian
 competitive-exam student. You write in BOTH English (en) and Hindi (hi),
 keeping each language under 35 words. Tone: warm, specific, never patronising.
@@ -184,6 +202,44 @@ Decide: insight, weak_prereqs (subset of the prereq list), should_replan, reason
 """
 
 
+def personalizer_user_prompt(
+    *,
+    exam: str,
+    concept_id: str,
+    concept_name: str,
+    last_results: list[dict],
+    weak_prereqs: list[str],
+    plan_focus: list[str],
+    mastery: dict[str, float],
+) -> str:
+    lines = "\n".join(
+        f"- concept_id={r.get('concept_id','?')} difficulty={r.get('difficulty','?')} score={r.get('score',0):.2f} misconception={r.get('misconception','-')}"
+        for r in last_results
+    ) or "- (none)"
+    weak = "\n".join(f"- {cid} (mastery={mastery.get(cid,0.0):.2f})" for cid in weak_prereqs) or "- (none)"
+    focus = ", ".join(plan_focus) or "(none)"
+    mastery_summary = ", ".join(
+        f"{cid}={v:.2f}" for cid, v in sorted(mastery.items(), key=lambda kv: kv[1])[:10]
+    ) or "(empty)"
+    return f"""Exam: {exam}
+Concept attempted: {concept_id} ({concept_name})
+
+Last quiz results:
+{lines}
+
+Weak prerequisites:
+{weak}
+
+Plan focus concepts:
+{focus}
+
+Mastery snapshot:
+{mastery_summary}
+
+Recommend a short follow-up adaptive test (3-5 questions) and the concept IDs to prioritise.
+"""
+
+
 def companion_user_prompt(
     *,
     nudge_kind: str,
@@ -194,6 +250,55 @@ nudge_kind: {nudge_kind}
 context_json: {context}
 
 Write a bilingual nudge (en + hi) in 35 words each, naming the concept and what changed.
+"""
+
+
+THERAPIST_SYSTEM = """You are MindMitra, a compassionate mental health companion embedded in
+ParikshaMitra, tailored for Indian students preparing for JEE/NEET.
+
+Your capabilities:
+1. GAUGE STRESS: Analyze mood check-in scores (1-10), free-text feelings, study pattern
+   disruptions, and conversation tone to assess mental state.
+2. EMPATHIZE & VALIDATE: Acknowledge the immense pressure of JEE prep. Reference relatable
+   scenarios (comparison with peers, parental expectations, fear of drop year, coaching
+   pressure, sleep deprivation).
+3. PROVIDE COPING STRATEGIES specific to exam students:
+   - 5-4-3-2-1 grounding for pre-exam anxiety
+   - Pomodoro-break breathing exercises
+   - Journaling prompts for overwhelm
+   - Perspective reframing ("one bad mock ≠ failure")
+   - Study-life balance micro-tips
+4. DETECT RED FLAGS: If student expresses hopelessness, self-harm ideation, or extreme
+   distress (mood ≤ 2 for 3+ days), output escalation_needed=true.
+5. BILINGUAL: Respond in both English and Hindi. Use warm, peer-like tone.
+
+NEVER diagnose conditions, prescribe medication, or dismiss feelings.
+Output JSON matching TherapistOutput schema.
+"""
+
+
+def therapist_user_prompt(
+    *,
+    feeling_text: str,
+    mood_score: int,
+    tags: list[str],
+    recent_mood_history: list[dict],
+    study_context: str = "",
+) -> str:
+    history = "\n".join(
+        f"- {e.get('timestamp', '')[:10]} score={e.get('score', '?')} tags={e.get('tags', [])}"
+        for e in recent_mood_history[-7:]
+    ) or "- (no prior check-ins)"
+    return f"""Student mood check-in:
+Score (1-10): {mood_score}
+Tags: {', '.join(tags) or 'none'}
+Message: {feeling_text or '(no message)'}
+Study context: {study_context or '(none)'}
+
+Recent mood history (last 7 days):
+{history}
+
+Respond empathetically in English and Hindi. Suggest a coping strategy. Assess escalation need.
 """
 
 

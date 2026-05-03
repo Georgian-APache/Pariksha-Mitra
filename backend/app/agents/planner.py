@@ -6,6 +6,9 @@ import asyncio
 import logging
 import random
 from datetime import date, timedelta
+from typing import Literal, cast
+
+from pydantic import ValidationError
 
 from app.agents.llm import gemini_json
 from app.agents.prompts import PLANNER_SYSTEM, planner_user_prompt
@@ -15,6 +18,8 @@ from app.config import APIKeys, get_settings
 from app.intelligence.concept_dag import get_dag
 
 log = logging.getLogger("parikshamitra.planner")
+
+_ALLOWED_ACTIVITY = frozenset({"learn", "quiz", "review", "drill"})
 
 
 async def _llm_plan(state: StudentState, keys: APIKeys) -> dict:
@@ -59,11 +64,16 @@ def _heuristic_plan(state: StudentState) -> dict:
         catalogue,
         key=lambda c: (mastery.get(c["id"], 0.0), -c["weight"]),
     )[:14]
+    if not weakest:
+        weakest = catalogue[: max(1, min(14, len(catalogue)))] if catalogue else [
+            {"id": "general.review", "subject": "General", "name": "Review", "weight": 1.0},
+        ]
     rng = random.Random(7)
     days: list[dict] = []
     for i in range(7):
         d = date.today() + timedelta(days=i)
-        focus = weakest[(i * 2) % len(weakest):(i * 2) % len(weakest) + 2] or weakest[:2]
+        span = len(weakest)
+        focus = weakest[(i * 2) % span : (i * 2) % span + 2] or weakest[: min(2, span)]
         # Ensure we have 3-4 blocks
         blocks = []
         remaining = daily_minutes
@@ -81,7 +91,7 @@ def _heuristic_plan(state: StudentState) -> dict:
             )
             remaining -= mins
         # Filler review slot if leftover > 15
-        if remaining > 15:
+        if remaining > 15 and catalogue:
             extra = rng.choice(catalogue)
             blocks.append(
                 {
@@ -106,6 +116,56 @@ def _heuristic_plan(state: StudentState) -> dict:
     }
 
 
+def _weekly_plan_from_raw(raw: dict) -> WeeklyPlan:
+    """Turn planner JSON into ``WeeklyPlan``, sanitizing common LLM/schema drift."""
+
+    days_out: list[PlanDay] = []
+    raw_days = raw.get("days") if isinstance(raw.get("days"), list) else []
+    for d in raw_days:
+        if not isinstance(d, dict):
+            continue
+        date_str = str(d.get("date") or date.today().isoformat())
+        blocks_in = d.get("blocks") if isinstance(d.get("blocks"), list) else []
+        blocks_out: list[PlanDayBlock] = []
+        for b in blocks_in:
+            if not isinstance(b, dict):
+                continue
+            act = str(b.get("activity", "learn")).lower().strip()
+            if act not in _ALLOWED_ACTIVITY:
+                act = "learn"
+            try:
+                mins = int(float(b.get("minutes", 30)))
+            except (TypeError, ValueError):
+                mins = 30
+            mins = max(5, mins)
+            blocks_out.append(
+                PlanDayBlock(
+                    subject=str(b.get("subject", "Study")),
+                    concept_id=str(b.get("concept_id", "general")),
+                    minutes=mins,
+                    activity=cast(Literal["learn", "quiz", "review", "drill"], act),
+                    note=str(b.get("note", "")),
+                )
+            )
+        if not blocks_out:
+            continue
+        tm_raw = d.get("total_minutes")
+        try:
+            total_m = int(tm_raw) if tm_raw is not None else sum(x.minutes for x in blocks_out)
+        except (TypeError, ValueError):
+            total_m = sum(x.minutes for x in blocks_out)
+        days_out.append(
+            PlanDay(date=date_str, total_minutes=max(total_m, sum(x.minutes for x in blocks_out)), blocks=blocks_out)
+        )
+    if not days_out:
+        raise ValueError("no valid plan days after sanitization")
+    return WeeklyPlan(
+        rationale=str(raw.get("rationale", "")),
+        focus_concepts=[str(x) for x in (raw.get("focus_concepts") or [])],
+        days=days_out,
+    )
+
+
 async def planner_node(state: StudentState, keys: APIKeys) -> StudentState:
     raw: dict
     error: str | None = None
@@ -116,20 +176,14 @@ async def planner_node(state: StudentState, keys: APIKeys) -> StudentState:
         raw = _heuristic_plan(state)
         error = str(exc)
 
-    # Normalise to WeeklyPlan
-    days = [
-        PlanDay(
-            date=d["date"],
-            total_minutes=int(d.get("total_minutes") or sum(b.get("minutes", 0) for b in d.get("blocks", []))),
-            blocks=[PlanDayBlock(**b) for b in d.get("blocks", [])],
-        )
-        for d in raw.get("days", [])
-    ]
-    plan = WeeklyPlan(
-        rationale=raw.get("rationale", ""),
-        focus_concepts=list(raw.get("focus_concepts", [])),
-        days=days,
-    )
+    plan: WeeklyPlan
+    try:
+        plan = _weekly_plan_from_raw(raw)
+    except (ValidationError, ValueError, TypeError, KeyError) as exc:
+        log.warning("Planner output invalid after sanitization, using heuristic. err=%s", exc)
+        raw = _heuristic_plan(state)
+        error = str(exc)
+        plan = _weekly_plan_from_raw(raw)
     state.plan = plan.model_dump()
     state.add_trace(
         AgentStep(

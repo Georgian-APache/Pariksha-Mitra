@@ -128,6 +128,39 @@ async def gemini_text(
     return response.text or ""
 
 
+async def gemini_chat(
+    *,
+    keys: APIKeys,
+    system: str,
+    history: list[dict[str, str]],
+    message: str,
+    model: str | None = None,
+    temperature: float = 0.75,
+) -> str:
+    """Multi-turn Gemini conversation. history items have role='user'|'assistant'."""
+    s = get_settings()
+    model = model or s.gemini_default_model
+    client = _gemini_client(keys)
+
+    contents: list[Any] = []
+    for turn in history:
+        role = "model" if turn["role"] == "assistant" else "user"
+        contents.append(gtypes.Content(role=role, parts=[gtypes.Part.from_text(text=turn["content"])]))
+    contents.append(gtypes.Content(role="user", parts=[gtypes.Part.from_text(text=message)]))
+
+    config = gtypes.GenerateContentConfig(
+        temperature=temperature,
+        system_instruction=system,
+    )
+    response = await asyncio.to_thread(
+        client.models.generate_content,
+        model=model,
+        contents=contents,
+        config=config,
+    )
+    return response.text or ""
+
+
 async def gemini_embed(
     *,
     keys: APIKeys,

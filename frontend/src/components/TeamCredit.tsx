@@ -1,7 +1,7 @@
 import { Sparkles } from "lucide-react";
 
 const FULL_CREDIT =
-  "Developed by Team mc² (MCTE Coding Club) — faculty mentors Capt Ajay Prakash Sharma and Capt Amit Verma — for the Shekunj Agentic AI Hackathon, powered by Microsoft.";
+  "Developed by Team mc² (MCTE Coding Club) — for the Shekunj Agentic AI Hackathon, powered by Microsoft.";
 
 type Variant = "header" | "hero" | "footer";
 

@@ -23,6 +23,7 @@ from langgraph.graph import END, StateGraph
 
 from app.agents.analyst import analyst_node
 from app.agents.companion import companion_node
+from app.agents.personalizer import personalizer_node
 from app.agents.planner import planner_node
 from app.agents.state import StudentState
 from app.config import APIKeys
@@ -43,6 +44,11 @@ async def _planner(s: GraphState) -> GraphState:
     return {"student": student}
 
 
+async def _personalizer(s: GraphState) -> GraphState:
+    student = await personalizer_node(s["student"], s["keys"])
+    return {"student": student}
+
+
 async def _companion(s: GraphState) -> GraphState:
     student = await companion_node(s["student"], s["keys"])
     return {"student": student}
@@ -54,6 +60,10 @@ def _route_after_analyst(s: GraphState) -> str:
 
 
 def _route_after_planner(_s: GraphState) -> str:
+    return "personalizer"
+
+
+def _route_after_personalizer(_s: GraphState) -> str:
     return "companion"
 
 
@@ -61,14 +71,16 @@ def build_graph():
     g = StateGraph(GraphState)
     g.add_node("analyst", _analyst)
     g.add_node("planner", _planner)
+    g.add_node("personalizer", _personalizer)
     g.add_node("companion", _companion)
 
     g.set_entry_point("analyst")
     g.add_conditional_edges("analyst", _route_after_analyst, {
         "planner": "planner",
-        "companion": "companion",
+        "companion": "personalizer",
     })
-    g.add_edge("planner", "companion")
+    g.add_edge("planner", "personalizer")
+    g.add_edge("personalizer", "companion")
     g.add_edge("companion", END)
     return g.compile()
 
@@ -85,9 +97,11 @@ def build_diagnostic_graph():
     g = StateGraph(GraphState)
     g.add_node("analyst", _analyst)
     g.add_node("planner", _planner)
+    g.add_node("personalizer", _personalizer)
     g.add_node("companion", _companion)
     g.set_entry_point("analyst")
     g.add_edge("analyst", "planner")
-    g.add_edge("planner", "companion")
+    g.add_edge("planner", "personalizer")
+    g.add_edge("personalizer", "companion")
     g.add_edge("companion", END)
     return g.compile()

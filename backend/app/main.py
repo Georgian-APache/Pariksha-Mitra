@@ -45,10 +45,13 @@ def create_app() -> FastAPI:
         doubt as doubt_routes,
         graph as graph_routes,
         insights as insights_routes,
+        friends as friends_routes,
+        mental_health as mental_health_routes,
         onboarding as onboarding_routes,
         plan as plan_routes,
         quiz as quiz_routes,
         rag as rag_routes,
+        schedule as schedule_routes,
         stream as stream_routes,
         users as user_routes,
         voice as voice_routes,
@@ -66,6 +69,9 @@ def create_app() -> FastAPI:
         calendar_routes.router,
         voice_routes.router,
         insights_routes.router,
+        friends_routes.router,
+        mental_health_routes.router,
+        schedule_routes.router,
     ):
         app.include_router(r)
 

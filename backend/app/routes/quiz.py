@@ -234,6 +234,7 @@ class FinishResponse(BaseModel):
     nudge: dict[str, str]
     weak_prereqs: list[str]
     replanned: bool
+    follow_up_test: dict[str, Any] | None = None
 
 
 @router.post("/finish", response_model=FinishResponse)
@@ -309,4 +310,5 @@ async def finish_quiz(
         nudge=out_state.nudge or {},
         weak_prereqs=out_state.weak_prereqs,
         replanned=bool(replanned),
+        follow_up_test=out_state.follow_up_test or None,
     )

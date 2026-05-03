@@ -38,6 +38,8 @@ export default function OnboardingPage() {
   const [customExam, setCustomExam] = useState("");
   const [examDate, setExamDate] = useState("2026-04-19");
   const [hours, setHours] = useState(3);
+  const [parentName, setParentName] = useState("");
+  const [parentPhone, setParentPhone] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function startDiagnostic() {
@@ -55,6 +57,8 @@ export default function OnboardingPage() {
           exam_date: examDate,
           daily_hours: hours,
           user_id: keys.userId || undefined,
+          parent_name: parentName.trim() || undefined,
+          parent_phone: parentPhone.trim() || undefined,
         },
       });
       saveKeys({ userId: res.user_id });
@@ -152,6 +156,36 @@ export default function OnboardingPage() {
             <div className="text-xs text-muted-foreground">
               Block size will scale; target around 60-90 min per concept block.
             </div>
+          </div>
+
+          {/* Parent contact (optional) */}
+          <div className="space-y-3 pt-2 border-t border-border">
+            <Label className="text-xs text-muted-foreground uppercase tracking-wide">
+              Parent contact (optional — for study accountability alerts)
+            </Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="parent-name" className="text-xs">Parent name</Label>
+                <Input
+                  id="parent-name"
+                  placeholder="e.g. Ramesh Kumar"
+                  value={parentName}
+                  onChange={(e) => setParentName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="parent-phone" className="text-xs">WhatsApp number</Label>
+                <Input
+                  id="parent-phone"
+                  placeholder="+91XXXXXXXXXX"
+                  value={parentPhone}
+                  onChange={(e) => setParentPhone(e.target.value)}
+                />
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              🔒 Your private conversations with MindMitra are never shared. Only missed study sessions trigger alerts.
+            </p>
           </div>
 
           <Button

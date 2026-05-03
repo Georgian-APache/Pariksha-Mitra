@@ -8,7 +8,6 @@ from pathlib import Path
 
 import chromadb
 from chromadb.api import ClientAPI
-from chromadb.config import Settings as ChromaSettings
 
 from app.config import CHROMA_DIR
 
@@ -18,7 +17,7 @@ def chroma_client() -> ClientAPI:
     Path(CHROMA_DIR).mkdir(parents=True, exist_ok=True)
     return chromadb.PersistentClient(
         path=str(CHROMA_DIR),
-        settings=ChromaSettings(anonymized_telemetry=False),
+        settings=chromadb.Settings(anonymized_telemetry=False),
     )
 
 

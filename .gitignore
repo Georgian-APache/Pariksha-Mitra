@@ -19,6 +19,7 @@ frontend/tsconfig.tsbuildinfo
 # Misc
 *.log
 *.tmp
+credentials.md
 
 # OS
 .DS_Store

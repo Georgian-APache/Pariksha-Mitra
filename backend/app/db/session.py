@@ -25,7 +25,7 @@ without the package installed at all. ``requirements.txt`` pins
 from __future__ import annotations
 
 from collections.abc import AsyncGenerator
-from urllib.parse import urlencode, urlparse, urlunparse
+from urllib.parse import urlparse
 
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
@@ -33,6 +33,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.pool import AsyncAdaptedQueuePool
 
 from app.config import get_settings
 
@@ -46,37 +47,12 @@ def _is_libsql_url(url: str) -> bool:
     return url.startswith("libsql://") or "authToken=" in url
 
 
-def _to_libsql_sqlalchemy_url(raw: str) -> str:
-    """Rewrite a ``libsql://...`` URL into ``sqlite+aiolibsql://...``.
-
-    Turso publishes connection strings like
-    ``libsql://my-db-org.turso.io?authToken=eyJ...``. The
-    ``sqlalchemy-libsql`` async dialect expects the SQLAlchemy scheme
-    ``sqlite+aiolibsql`` and, since Turso requires HTTPS, the ``secure=true``
-    query flag (the dialect uses it to pick https vs http transport).
-    Any extra query params from the user are preserved.
-    """
-    parsed = urlparse(raw)
-    # The dialect itself parses authToken etc. - we just need to ensure
-    # secure=true is set so libsql_experimental connects via HTTPS.
-    query_pairs = []
-    seen_secure = False
-    if parsed.query:
-        for pair in parsed.query.split("&"):
-            if not pair:
-                continue
-            key = pair.split("=", 1)[0]
-            if key == "secure":
-                seen_secure = True
-            query_pairs.append(pair)
-    if not seen_secure:
-        query_pairs.append("secure=true")
-    new_query = "&".join(query_pairs)
-    return urlunparse(("sqlite+aiolibsql", parsed.netloc, parsed.path, parsed.params, new_query, parsed.fragment))
-
-
 def _build_engine():
-    """Construct the async engine, branching on the URL scheme."""
+    """Construct the async engine, branching on the URL scheme.
+
+    For Turso/libSQL the auth_token must be passed via connect_args (not in
+    the URL query string) — that is how sqlalchemy-libsql 0.2.x reads it.
+    """
     settings = get_settings()
     url = settings.database_url
     if _is_libsql_url(url):
@@ -89,8 +65,22 @@ def _build_engine():
                 "`pip install sqlalchemy-libsql` (Python 3.11-3.13 only - 3.14 "
                 "has no prebuilt libsql-experimental wheel yet)."
             ) from exc
-        sa_url = _to_libsql_sqlalchemy_url(url)
-        return create_async_engine(sa_url, echo=False, future=True)
+        parsed = urlparse(url)
+        # Extract authToken from query string; everything else goes on the SA URL.
+        query_items = {}
+        for pair in (parsed.query or "").split("&"):
+            if "=" in pair:
+                k, v = pair.split("=", 1)
+                query_items[k] = v
+        auth_token = query_items.pop("authToken", "")
+        sa_url = f"sqlite+aiolibsql://{parsed.netloc}?secure=true"
+        return create_async_engine(
+            sa_url,
+            echo=False,
+            future=True,
+            poolclass=AsyncAdaptedQueuePool,
+            connect_args={"auth_token": auth_token},
+        )
     return create_async_engine(url, echo=False, future=True)
 
 

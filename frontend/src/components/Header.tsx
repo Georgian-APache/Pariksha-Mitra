@@ -30,6 +30,8 @@ export function Header() {
             <Link href="/graph" className="px-3 py-1.5 rounded hover:text-foreground hover:bg-input/40">Concept Graph</Link>
             <Link href="/doubt" className="px-3 py-1.5 rounded hover:text-foreground hover:bg-input/40">Snap-a-Doubt</Link>
             <Link href="/library" className="px-3 py-1.5 rounded hover:text-foreground hover:bg-input/40">Library</Link>
+            <Link href="/mindmitra" className="px-3 py-1.5 rounded hover:text-foreground hover:bg-input/40 text-[oklch(0.65_0.15_290)]">MindMitra</Link>
+            <Link href="/friends" className="px-3 py-1.5 rounded hover:text-foreground hover:bg-input/40 text-amber-500">Friends</Link>
           </nav>
 
           <div className="ml-auto flex items-center gap-2">

@@ -37,6 +37,8 @@ class StartRequest(BaseModel):
     )
     exam_date: str | None = None
     daily_hours: float = Field(default=3.0, ge=0.5, le=16)
+    parent_phone: str | None = None
+    parent_name: str | None = None
 
     @staticmethod
     def _normalize_exam(raw: str) -> str:
@@ -120,6 +122,8 @@ async def start_diagnostic(
         target_exam=body.target_exam,
         exam_date=body.exam_date,
         daily_hours=body.daily_hours,
+        parent_phone=body.parent_phone,
+        parent_name=body.parent_name,
     )
     s = get_settings()
     concepts = _pick_diagnostic_concepts(body.target_exam, s.diagnostic_question_count)

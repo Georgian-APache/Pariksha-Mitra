@@ -6,6 +6,9 @@ const backendDevProxy =
   "http://127.0.0.1:8000";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    proxyTimeout: 120_000,
+  },
   async rewrites() {
     return [
       {

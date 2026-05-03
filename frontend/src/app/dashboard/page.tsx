@@ -21,9 +21,10 @@ import { SubjectRadar } from "@/components/charts/SubjectRadar";
 import { TrendChart } from "@/components/charts/TrendChart";
 import { RankPredictor } from "@/components/charts/RankPredictor";
 import { PlanStrip } from "@/components/PlanStrip";
+import { ScheduleTracker } from "@/components/ScheduleTracker";
 import { api } from "@/lib/api";
 import { useApiKeys } from "@/lib/byok";
-import type { Dashboard } from "@/lib/types";
+import type { Dashboard, MoodHistory } from "@/lib/types";
 
 type Insight = {
   insight_en: string;
@@ -40,6 +41,7 @@ export default function DashboardPage() {
   const [nudge, setNudge] = useState<{ en?: string; hi?: string } | null>(null);
   const [insight, setInsight] = useState<Insight | null>(null);
   const [insightLoading, setInsightLoading] = useState(false);
+  const [moodData, setMoodData] = useState<MoodHistory | null>(null);
 
   async function load(signal?: AbortSignal) {
     if (!keys.userId) {
@@ -104,6 +106,13 @@ export default function DashboardPage() {
     void loadInsight(ctrl.signal);
     return () => ctrl.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keys.userId]);
+
+  useEffect(() => {
+    if (!keys.userId) return;
+    api<MoodHistory>(`/mental-health/${keys.userId}/history`)
+      .then(setMoodData)
+      .catch(() => null);
   }, [keys.userId]);
 
   async function replan() {
@@ -226,8 +235,56 @@ export default function DashboardPage() {
         </MotionCard>
       )}
 
+      {/* MindMitra quick access */}
+      <MotionCard index={1}>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Brain className="size-4 text-[oklch(0.65_0.15_290)]" />
+              MindMitra — Mental Wellness
+            </CardTitle>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/mindmitra">Open MindMitra</Link>
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {moodData && moodData.mood_history.length > 0 ? (
+            <div className="flex items-center gap-4">
+              <div className="text-4xl">
+                {["😢","😟","😕","😐","🙂","😊","😄","😁","🤩","🥳"][
+                  Math.max(0, (moodData.mood_history.at(-1)?.score ?? 5) - 1)
+                ]}
+              </div>
+              <div>
+                <p className="text-sm font-medium">
+                  Last mood: {moodData.mood_history.at(-1)?.score}/10
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {moodData.mood_history.at(-1)?.tags.join(", ") || "No tags"}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Check in with MindMitra to track your mental wellness during JEE prep.
+            </p>
+          )}
+        </CardContent>
+      </MotionCard>
+
+      {/* Schedule tracker */}
+      <MotionCard index={2}>
+        <CardHeader>
+          <CardTitle>Today&apos;s Schedule</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ScheduleTracker />
+        </CardContent>
+      </MotionCard>
+
       <div className="grid lg:grid-cols-3 gap-4">
-        <MotionCard index={2}>
+        <MotionCard index={3}>
           <CardHeader>
             <CardTitle>Exam readiness</CardTitle>
           </CardHeader>
@@ -242,7 +299,7 @@ export default function DashboardPage() {
           </CardContent>
         </MotionCard>
 
-        <MotionCard index={3}>
+        <MotionCard index={4}>
           <CardHeader>
             <CardTitle>Subject mastery</CardTitle>
           </CardHeader>
@@ -251,7 +308,7 @@ export default function DashboardPage() {
           </CardContent>
         </MotionCard>
 
-        <MotionCard index={4}>
+        <MotionCard index={5}>
           <CardHeader>
             <CardTitle>Predicted exam-day percentile</CardTitle>
           </CardHeader>
@@ -261,7 +318,7 @@ export default function DashboardPage() {
         </MotionCard>
       </div>
 
-      <MotionCard index={5}>
+      <MotionCard index={6}>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>This week&apos;s plan</CardTitle>
@@ -273,7 +330,7 @@ export default function DashboardPage() {
         </CardContent>
       </MotionCard>
 
-      <MotionCard index={6}>
+      <MotionCard index={7}>
         <CardHeader>
           <CardTitle>Readiness trend</CardTitle>
         </CardHeader>

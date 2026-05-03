@@ -59,7 +59,7 @@ class WeeklyPlan(BaseModel):
 class AgentStep(BaseModel):
     """One step persisted in the agent trace - what the user sees animate."""
 
-    agent: Literal["orchestrator", "planner", "quizmaster", "analyst", "companion", "system"]
+    agent: Literal["orchestrator", "planner", "quizmaster", "analyst", "companion", "therapist", "system"]
     headline: str
     detail: str = ""
     payload: dict[str, Any] = Field(default_factory=dict)
@@ -98,6 +98,7 @@ class StudentState(BaseModel):
     weak_prereqs: list[str] = Field(default_factory=list)
     readiness: dict[str, float] = Field(default_factory=dict)
     nudge: dict[str, str] = Field(default_factory=dict)  # {en: ..., hi: ...}
+    follow_up_test: dict[str, Any] = Field(default_factory=dict)
 
     # Trace - the SSE feed listens to this
     trace: list[AgentStep] = Field(default_factory=list)
@@ -214,6 +215,28 @@ ANALYST_OUTPUT_SCHEMA: dict[str, Any] = {
 }
 
 
+PERSONALIZER_OUTPUT_SCHEMA: dict[str, Any] = {
+    "type": "OBJECT",
+    "properties": {
+        "rationale": {"type": "STRING"},
+        "focus_concepts": {"type": "ARRAY", "items": {"type": "STRING"}},
+        "test_requests": {
+            "type": "ARRAY",
+            "items": {
+                "type": "OBJECT",
+                "properties": {
+                    "concept_id": {"type": "STRING"},
+                    "subject": {"type": "STRING"},
+                    "difficulty": {"type": "INTEGER"},
+                },
+                "required": ["concept_id", "subject", "difficulty"],
+            },
+        },
+    },
+    "required": ["rationale", "focus_concepts", "test_requests"],
+}
+
+
 COMPANION_OUTPUT_SCHEMA: dict[str, Any] = {
     "type": "OBJECT",
     "properties": {
@@ -222,6 +245,23 @@ COMPANION_OUTPUT_SCHEMA: dict[str, Any] = {
         "tone": {"type": "STRING"},
     },
     "required": ["en", "hi"],
+}
+
+
+THERAPIST_OUTPUT_SCHEMA: dict[str, Any] = {
+    "type": "OBJECT",
+    "properties": {
+        "response_en": {"type": "STRING"},
+        "response_hi": {"type": "STRING"},
+        "detected_mood_score": {"type": "INTEGER"},
+        "mood_tags": {"type": "ARRAY", "items": {"type": "STRING"}},
+        "coping_suggestion": {"type": "STRING"},
+        "escalation_needed": {"type": "BOOLEAN"},
+        "escalation_reason": {"type": "STRING"},
+        "follow_up_question": {"type": "STRING"},
+    },
+    "required": ["response_en", "response_hi", "detected_mood_score", "mood_tags",
+                 "coping_suggestion", "escalation_needed"],
 }
 
 

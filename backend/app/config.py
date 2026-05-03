@@ -51,6 +51,13 @@ class Settings(BaseSettings):
     default_gemini_api_key: str | None = None
     default_groq_api_key: str | None = None
 
+    # ---- WhatsApp (Twilio) ----
+    twilio_account_sid: str | None = None
+    twilio_auth_token: str | None = None
+    twilio_whatsapp_from: str = "whatsapp:+14155238886"
+    parent_alert_miss_threshold: int = 2
+    parent_alert_cooldown_hours: int = 24
+
     # ---- Tunables ----
     diagnostic_question_count: int = 15
     quiz_default_count: int = 10
